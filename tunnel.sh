@@ -50,34 +50,37 @@ extract_tunnel_url()
 store_data()
 {
     # Write data to tunnel.cfg
-    echo "ADDRESS=\"$tunnel_url\"" > "$storage_file"
-    echo "PORT=$tunnel_port" >> "$storage_file"
+    echo "$tunnel_url:$tunnel_port" > "$storage_file"
 }
 
 read_data()
 {
-    # Read data from tunnel.cfg, write to tunnel_url and tunnel_port
-    . "$storage_file"
-    tunnel_url="$ADDRESS"
-    tunnel_port="$PORT"
+    # Read data from tunnel.cfg and write to tunnel_url
+    tunnel_url=$(<"$storage_file")
 }
 
-# Temporary storage file
+
+# Define temporary storage file
 storage_file="tunnel.cfg"
 
-# Define the log file path
+# Define the log file destination
 log_file="/var/log/cloudflared.log"
 
-# Assign $1 to tunnel_port if provided, otherwise use "80"
-tunnel_port="${1:-80}"
+
+# Initialize tunnel variable
+tunnel=""
 
 # Initialize tunnel URL variable
 tunnel_url=""
 
+# Assign $1 to tunnel_port if provided, otherwise use "80"
+tunnel_port="${1:-80}"
+
 
 if [ "$1" = "stop" ]; then
-    # Call stop_tunnel function
+    # Handle transfer parameter "stop", call stop_tunnel function
     stop_tunnel
+    exit 0
 elif [ "$1" -gt 0 ]; then
     # Start new tunnel with provided port
     start_tunnel
@@ -94,7 +97,5 @@ else
 fi
 
 
-# Output tunnel address and port if active
-if [ -f "$storage_file" ]; then
-    echo "$tunnel_url $tunnel_port"
-fi
+# Output tunnel address
+echo "$tunnel"
