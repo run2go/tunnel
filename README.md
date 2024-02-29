@@ -1,5 +1,5 @@
 # tunnel.sh
-Simple shell script to handle cloudflared quick tunnels.
+Shell script to handle the "cloudflared" binary, adding basic functionality to manage the quick tunnel.
 
 ## Setup
 Retrieve the latest tunnel.sh and store it in /usr/local/bin/
