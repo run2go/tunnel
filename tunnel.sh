@@ -12,7 +12,6 @@ start_tunnel()
     if [ ! -f "/usr/local/bin/cloudflared" ]; then
         wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -O /usr/local/bin/cloudflared
         chmod +x /usr/local/bin/cloudflared
-        echo "Cloudflared binary downloaded and installed."
     fi
 
     # Start new cloudflared service in the background and redirect its output to a log file
