@@ -1,5 +1,6 @@
 # tunnel.sh
-Shell script to handle the "cloudflared" binary, adding basic functionality to manage the quick tunnel.<br>
+## _Shell script to handle cloudflared quick tunnels_
+Robust shell script to retrieve & manage the "cloudflared" binary, adding basic functionality to control the quick tunnel.<br>
 Upon usage, the shell script creates a ```tunnel.cfg``` to store and retrieve the current tunnel URL & Port.<br>
 The tunnel logs are being written to ```/var/log/cloudflared.log```.
 
@@ -20,17 +21,8 @@ alias tunnel='/usr/local/bin/tunnel.sh'
 ```
 
 ## Usage
-Print the current tunnel & port or create a new one with default port 80
-```sh
-tunnel
-```
-
-Create new tunnel with designated port
-```sh
-tunnel <PORT>
-```
-
-Stop a running tunnel
-```sh
-tunnel stop
-```
+| Command | Description |
+| ------ | ------ |
+| ```tunnel``` | Print the current tunnel & port or create a new one with default port 80 |
+| ```tunnel <PORT>``` | Create new tunnel with designated port |
+| ```tunnel stop``` | Stop a running tunnel |
