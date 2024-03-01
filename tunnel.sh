@@ -13,7 +13,7 @@ start_tunnel()
 
     # Download cloudflared binary if missing
     if [ ! -f "/usr/local/bin/cloudflared" ]; then
-        wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -O /usr/local/bin/cloudflared
+        wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -O /usr/local/bin/cloudflared
         chmod +x /usr/local/bin/cloudflared
     fi
 
@@ -52,6 +52,9 @@ extract_tunnel_url()
         sleep 0.1
     done
 
+    # Update tunnel variable
+    tunnel=$tunnel_url:$tunnel_port
+    
     # Store extracted data
     store_data
 }
