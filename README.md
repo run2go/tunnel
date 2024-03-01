@@ -23,6 +23,6 @@ alias tunnel='/usr/local/bin/tunnel.sh'
 ## Usage
 | _Command_ | _Description_ |
 | ------ | ------ |
-| ```tunnel``` | Print the current tunnel & port or create a new one with default port 80 |
+| ```tunnel``` | Print the current tunnel or create a new one with port 80 |
 | ```tunnel <PORT>``` | Create new tunnel with designated port |
 | ```tunnel stop``` | Stop a running tunnel |
