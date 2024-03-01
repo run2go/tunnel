@@ -12,7 +12,7 @@ curl https://raw.githubusercontent.com/run2go/tunnel/main/tunnel.sh > /usr/local
 
 Make tunnel.sh file executable
 ```sh
-chmod +x /usr/bin/tunnel.sh
+chmod +x /usr/local/bin/tunnel.sh
 ```
 
 Create "tunnel" alias
