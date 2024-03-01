@@ -7,7 +7,10 @@ start_tunnel()
 
     # Create an empty log file
     touch "$log_file"
-      
+
+    # Create am empty storage file
+    touch "$storage_file"
+
     # Download cloudflared binary if missing
     if [ ! -f "/usr/local/bin/cloudflared" ]; then
         wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -O /usr/local/bin/cloudflared
@@ -16,6 +19,9 @@ start_tunnel()
 
     # Start new cloudflared service in the background and redirect its output to a log file
     /usr/local/bin/cloudflared tunnel --no-autoupdate --url "http://localhost:$tunnel_port" >> "$log_file" 2>&1 &
+
+    # Extract tunnel URL
+    extract_tunnel_url
 }
 
 stop_tunnel()
@@ -25,7 +31,7 @@ stop_tunnel()
 
     # Remove temporary storage file
     rm -f "$storage_file"
-    
+
     # Remove the existing log file
     rm -f "$log_file"
 }
@@ -41,10 +47,13 @@ extract_tunnel_url()
             # If tunnel URL is found, break out of the loop
             [ -n "$tunnel_url" ] && break
         done < "$log_file"
-        
-        # Wait for 1 second before checking again
-        sleep 1
+
+        # Wait for 0.1 second before checking again
+        sleep 0.1
     done
+
+    # Store extracted data
+    store_data
 }
 
 store_data()
@@ -56,7 +65,7 @@ store_data()
 read_data()
 {
     # Read data from tunnel.cfg and write to tunnel_url
-    tunnel_url=$(<"$storage_file")
+    tunnel=$(cat "$storage_file")
 }
 
 
@@ -85,14 +94,12 @@ if [ "$1" ]; then
     elif [ "$1" -gt 0 ]; then
         # Start new tunnel with provided port
         start_tunnel
-        extract_tunnel_url
     fi
 else
     if [ -f "$storage_file" ]; then
         # Read data from tunnel.cfg
         read_data
-        echo "$ADDRESS"
-    else 
+    else
         # Create new storage file if missing
         start_tunnel
     fi
