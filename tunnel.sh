@@ -61,7 +61,7 @@ read_data()
 
 
 # Define temporary storage file
-storage_file="tunnel.cfg"
+storage_file="/usr/local/bin/tunnel.cfg"
 
 # Define the log file destination
 log_file="/var/log/cloudflared.log"
@@ -77,14 +77,16 @@ tunnel_url=""
 tunnel_port="${1:-80}"
 
 
-if [ "$1" = "stop" ]; then
-    # Handle transfer parameter "stop", call stop_tunnel function
-    stop_tunnel
-    exit 0
-elif [ "$1" -gt 0 ]; then
-    # Start new tunnel with provided port
-    start_tunnel
-    extract_tunnel_url
+if [ "$1" ]; then
+    if [ "$1" = "stop" ]; then
+        # Handle transfer parameter "stop", call stop_tunnel function
+        stop_tunnel
+        exit 0
+    elif [ "$1" -gt 0 ]; then
+        # Start new tunnel with provided port
+        start_tunnel
+        extract_tunnel_url
+    fi
 else
     if [ -f "$storage_file" ]; then
         # Read data from tunnel.cfg
