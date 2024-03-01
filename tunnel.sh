@@ -39,21 +39,18 @@ stop_tunnel()
 extract_tunnel_url()
 {
     # Loop until tunnel information is extracted
-    while [ -z "$tunnel_url" ]; do
+    while [ -z "$tunnel" ]; do
         # Read the log file line by line
         while IFS= read -r line; do
             # Extract tunnel information from the line
-            tunnel_url=$(echo "$line" | grep -o "https://.*trycloudflare.com")
+            tunnel=$(echo "$line" | grep -o "https://.*trycloudflare.com")
             # If tunnel URL is found, break out of the loop
-            [ -n "$tunnel_url" ] && break
+            [ -n "$tunnel" ] && break
         done < "$log_file"
 
         # Wait for 0.1 second before checking again
         sleep 0.1
     done
-
-    # Update tunnel variable
-    tunnel=$tunnel_url:$tunnel_port
     
     # Store extracted data
     store_data
@@ -62,12 +59,12 @@ extract_tunnel_url()
 store_data()
 {
     # Write data to tunnel.cfg
-    echo "$tunnel_url:$tunnel_port" > "$storage_file"
+    echo "$tunnel" > "$storage_file"
 }
 
 read_data()
 {
-    # Read data from tunnel.cfg and write to tunnel_url
+    # Read data from tunnel.cfg and write to tunnel
     tunnel=$(cat "$storage_file")
 }
 
@@ -81,9 +78,6 @@ log_file="/var/log/cloudflared.log"
 
 # Initialize tunnel variable
 tunnel=""
-
-# Initialize tunnel URL variable
-tunnel_url=""
 
 # Assign $1 to tunnel_port if provided, otherwise use "80"
 tunnel_port="${1:-80}"
