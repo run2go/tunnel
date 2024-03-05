@@ -26,3 +26,6 @@ alias tunnel='/usr/local/bin/tunnel.sh'
 | ```tunnel``` | Print the current tunnel or create a new one with port 80 |
 | ```tunnel <PORT>``` | Create new tunnel with designated port |
 | ```tunnel stop``` | Stop a running tunnel |
+
+## License
+MIT
