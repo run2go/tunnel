@@ -68,6 +68,10 @@ read_data()
     tunnel=$(cat "$storage_file")
 }
 
+# Invoke sudo usage if missing
+if [ "$(id -u)" != "0" ]; then
+    exec sudo "$0" "$@"
+fi
 
 # Define temporary storage file
 storage_file="/usr/local/bin/tunnel.cfg"
