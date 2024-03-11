@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 start_tunnel()
 {
@@ -51,7 +51,7 @@ extract_tunnel_url()
         # Wait for 0.1 second before checking again
         sleep 0.1
     done
-    
+
     # Store extracted data
     store_data
 }
@@ -69,8 +69,9 @@ read_data()
 }
 
 # Invoke sudo usage if missing
-if [ "$(id -u)" != "0" ]; then
+if [ "$(id -u)" -ne 0 ]; then
     exec sudo "$0" "$@"
+    exit $?
 fi
 
 # Define temporary storage file
