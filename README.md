@@ -1,5 +1,5 @@
 # tunnel.sh
-## _Shell script cloudflared quick tunnels_
+## _Shell script to handle cloudflared quick tunnels_
 Robust shell script to retrieve & manage the "cloudflared" binary, adding basic functionality to control the quick tunnel.<br>
 Upon usage, the shell script creates a `tunnel.cfg` to store and retrieve the current tunnel URL & Port.<br>
 The tunnel logs are being written to `/var/log/cloudflared.log`.
