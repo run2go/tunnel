@@ -8,7 +8,7 @@ start_tunnel()
     # Create an empty log file
     touch "$log_file"
 
-    # Create am empty storage file
+    # Create an empty storage file
     touch "$storage_file"
 
     # Download cloudflared binary if missing
@@ -18,7 +18,7 @@ start_tunnel()
     fi
 
     # Start new cloudflared service in the background and redirect its output to a log file
-    /usr/local/bin/cloudflared tunnel --no-autoupdate --url "http://localhost:$tunnel_port" >> "$log_file" 2>&1 &
+    /usr/local/bin/cloudflared tunnel --no-autoupdate --url "http://$tunnel_address:$tunnel_port" >> "$log_file" 2>&1 &
 
     # Extract tunnel URL
     extract_tunnel_url
@@ -80,22 +80,39 @@ storage_file="/usr/local/bin/tunnel.cfg"
 # Define the log file destination
 log_file="/var/log/cloudflared.log"
 
-
 # Initialize tunnel variable
 tunnel=""
 
-# Assign $1 to tunnel_port if provided, otherwise use "80"
-tunnel_port="${1:-80}"
-
+# Parse input arguments
+if [[ "$1" =~ ^[0-9]+$ ]]; then
+    # Port is provided
+    tunnel_address="localhost"
+    tunnel_port="$1"
+elif [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+$ ]]; then
+    # IP address with port is provided
+    tunnel_address="${1%:*}"
+    tunnel_port="${1##*:}"
+elif [[ "$1" =~ ^[^:]+:[0-9]+$ ]]; then
+    # Domain name with port is provided
+    tunnel_address="${1%:*}"
+    tunnel_port="${1##*:}"
+else
+    # Default to localhost:80 if no valid input provided
+    tunnel_address="localhost"
+    tunnel_port="80"
+fi
 
 if [ "$1" ]; then
     if [ "$1" = "stop" ]; then
         # Handle transfer parameter "stop", call stop_tunnel function
         stop_tunnel
         exit 0
-    elif [ "$1" -gt 0 ]; then
-        # Start new tunnel with provided port
+    elif [[ "$tunnel_port" =~ ^[0-9]+$ ]]; then
+        # Start new tunnel with provided address and port
         start_tunnel
+    else
+        echo "Invalid input. Please provide a valid port number or domain name/IP address with port."
+        exit 1
     fi
 else
     if [ -f "$storage_file" ]; then
@@ -106,7 +123,6 @@ else
         start_tunnel
     fi
 fi
-
 
 # Output tunnel address
 echo "$tunnel"
