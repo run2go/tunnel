@@ -1,7 +1,20 @@
 #!/bin/bash
 
-start_tunnel()
-{
+# Define file locations
+storage_file="/usr/local/bin/tunnel.cfg"
+log_file="/var/log/cloudflared.log"
+
+# Define default target address & port variables
+target_address="127.0.0.1"
+target_port="80"
+
+# Invoke sudo usage if missing
+if [[ "$(id -u)" -ne 0 ]]; then
+    exec sudo "$0" "$@"
+    exit $?
+fi
+
+start_tunnel() {
     # Stop existing tunnel
     stop_tunnel
 
@@ -18,14 +31,16 @@ start_tunnel()
     fi
 
     # Start new cloudflared service in the background and redirect its output to a log file
-    /usr/local/bin/cloudflared tunnel --no-autoupdate --url "http://$tunnel_address:$tunnel_port" >> "$log_file" 2>&1 &
+    /usr/local/bin/cloudflared tunnel --no-autoupdate --url "$target" >> "$log_file" 2>&1 &
 
     # Extract tunnel URL
     extract_tunnel_url
+
+    # Store extracted data
+    store_data
 }
 
-stop_tunnel()
-{
+stop_tunnel() {
     # Stop any running cloudflared processes
     pkill cloudflared
 
@@ -36,14 +51,20 @@ stop_tunnel()
     rm -f "$log_file"
 }
 
-extract_tunnel_url()
-{
+extract_tunnel_url() {
     # Loop until tunnel information is extracted
     while [ -z "$tunnel" ]; do
         # Read the log file line by line
         while IFS= read -r line; do
+            # Check if the line contains "failed" before trycloudflare.com URL
+            if [[ "$line" =~ failed ]]; then
+                echo "Error: $line"
+                exit 1
+            fi
+            
             # Extract tunnel information from the line
             tunnel=$(echo "$line" | grep -o "https://.*trycloudflare.com")
+
             # If tunnel URL is found, break out of the loop
             [ -n "$tunnel" ] && break
         done < "$log_file"
@@ -51,78 +72,41 @@ extract_tunnel_url()
         # Wait for 0.1 second before checking again
         sleep 0.1
     done
-
-    # Store extracted data
-    store_data
 }
 
-store_data()
-{
+store_data() {
     # Write data to tunnel.cfg
     echo "$tunnel" > "$storage_file"
 }
 
-read_data()
-{
+read_data() {
     # Read data from tunnel.cfg and write to tunnel
     tunnel=$(cat "$storage_file")
 }
 
-# Invoke sudo usage if missing
-if [ "$(id -u)" -ne 0 ]; then
-    exec sudo "$0" "$@"
-    exit $?
+# Call stop_tunnel function
+if [[ "$1" = "stop" ]]; then
+    stop_tunnel
+    exit 0
+# Use localhost + port if only port provided
+elif [[ "$1" =~ ^([0-9]+)$ ]]; then
+    target="localhost:$1"
+# Use provided address
+elif [[ "$1" ]]; then
+    target="$1"
+# Else use default parameters
+else
+    target="$target_address:$target_port"
 fi
 
-# Define temporary storage file
-storage_file="/usr/local/bin/tunnel.cfg"
-
-# Define the log file destination
-log_file="/var/log/cloudflared.log"
-
-# Initialize tunnel variable
-tunnel=""
-
-# Parse input arguments
-if [[ "$1" =~ ^[0-9]+$ ]]; then
-    # Port is provided
-    tunnel_address="localhost"
-    tunnel_port="$1"
-elif [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+$ ]]; then
-    # IP address with port is provided
-    tunnel_address="${1%:*}"
-    tunnel_port="${1##*:}"
-elif [[ "$1" =~ ^[^:]+:[0-9]+$ ]]; then
-    # Domain name with port is provided
-    tunnel_address="${1%:*}"
-    tunnel_port="${1##*:}"
+# Start a new tunnel
+if [[ "$1" ]] || [[ ! -f "$storage_file" ]]; then
+    start_tunnel
+# Read data from tunnel.cfg
 else
-    # Default to localhost:80 if no valid input provided
-    tunnel_address="localhost"
-    tunnel_port="80"
-fi
-
-if [ "$1" ]; then
-    if [ "$1" = "stop" ]; then
-        # Handle transfer parameter "stop", call stop_tunnel function
-        stop_tunnel
-        exit 0
-    elif [[ "$tunnel_port" =~ ^[0-9]+$ ]]; then
-        # Start new tunnel with provided address and port
-        start_tunnel
-    else
-        echo "Invalid input. Please provide a valid port number or domain name/IP address with port."
-        exit 1
-    fi
-else
-    if [ -f "$storage_file" ]; then
-        # Read data from tunnel.cfg
-        read_data
-    else
-        # Create new storage file if missing
-        start_tunnel
-    fi
+    read_data
 fi
 
 # Output tunnel address
 echo "$tunnel"
+exit 0
