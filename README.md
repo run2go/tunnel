@@ -7,7 +7,7 @@ The tunnel logs are being written to `/var/log/cloudflared.log`.
 ## Setup
 Retrieve the latest tunnel.sh and store it in `/usr/local/bin/`
 ```sh
-sudo bash -c "curl -L https://raw.githubusercontent.com/run2go/tunnel/main/tunnel.sh > /usr/local/bin/tunnel.sh"
+sudo bash -c "wget https://raw.githubusercontent.com/run2go/tunnel/main/tunnel.sh -O /usr/local/bin/tunnel.sh"
 ```
 
 Make tunnel.sh file executable
@@ -28,8 +28,8 @@ alias tunnel='/usr/local/bin/tunnel.sh'
 | `tunnel stop` | Stop a running tunnel |
 
 ## Dependencies
-- `curl`
 - `wget`
+- `grep`
 - `sudo`
 - `pkill`
 
