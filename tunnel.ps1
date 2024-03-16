@@ -5,10 +5,10 @@ function Start-Tunnel {
     Stop-Tunnel
 
     # Create an empty log file
-    New-Item -Path $logFile -ItemType File -Force | Out-Null
+    New-Item -Path $logFile -ItemType File -Force > $null
 
     # Create an empty storage file
-    New-Item -Path $storageFile -ItemType File -Force | Out-Null
+    New-Item -Path $storageFile -ItemType File -Force > $null
 
     # Download cloudflared binary if missing
     if (-not (Test-Path $cloudflaredExe)) {
@@ -16,7 +16,7 @@ function Start-Tunnel {
     }
 
     # Start new cloudflared service in the background and redirect its output to a log file
-    Start-Process -FilePath $cloudflaredExe -ArgumentList "tunnel --no-autoupdate --logfile=$logFile --url=http://localhost:$tunnelPort" -NoNewWindow
+    Start-Process -FilePath $cloudflaredExe -ArgumentList "tunnel --no-autoupdate --logfile=$logFile --url=$target" -WindowStyle hidden
     
     # Extract tunnel URL
     Extract-Tunnel-Url
@@ -24,42 +24,77 @@ function Start-Tunnel {
 
 function Stop-Tunnel {
     # Stop any running cloudflared processes
-    Stop-Process -Name cloudflared -Force
+    try {
+        Stop-Process -Name cloudflared -Force -ErrorAction Stop > $null
+    } catch {
+        # Ignore errors
+    }
 
     # Remove temporary storage file
-    Remove-Item -Path $storageFile -Force
+    try {
+        Remove-Item -Path $storageFile -Force -ErrorAction Stop > $null
+    } catch {
+        # Ignore errors
+    }
 
     # Remove the existing log file
-    Remove-Item -Path $logFile -Force
+    try {
+        Remove-Item -Path $logFile -Force -ErrorAction Stop > $null
+    } catch {
+        # Ignore errors
+    }
 }
 
 function Extract-Tunnel-Url {
     # Loop until tunnel information is extracted
     while (-not $tunnel) {
         # Read the log file line by line
-        Get-Content -Path $logFile | ForEach-Object {
-            # Extract tunnel information from the line
-            $tunnel = ($_ -split "https://.*trycloudflare.com")[1]
-            # If tunnel URL is found, break out of the loop
-            if ($tunnel) { break }
+        try {
+            $lines = Get-Content -Path $logFile -ErrorAction Stop
+            foreach ($line in $lines) {
+                # Check if the line contains "failed" before extracting the tunnel URL
+                if ($line -match "failed") {
+                    Write-Output "Error: $line"
+                    exit
+                }
+                # Extract tunnel URL from the line using a regex pattern
+                if ($line -match '(https://[^ ]*trycloudflare\.com)') {
+                    $tunnel = $matches[0]
+                    Store-Data
+                    Read-Data
+                    break
+                }
+            }
+        } catch {
+            Write-Output "Error: $_"
+            # Ignore errors
         }
 
         # Wait for 0.1 second before checking again
         Start-Sleep -Milliseconds 100
     }
-
-    # Store extracted data
-    Store-Data
 }
+
+
+
 
 function Store-Data {
     # Write data to tunnel.cfg
-    $tunnel | Out-File -FilePath $storageFile -Force
+    try {
+        $tunnel | Out-File -FilePath $storageFile -Force -ErrorAction Stop > $null
+    } catch {
+        # Ignore errors
+    }
 }
 
 function Read-Data {
     # Read data from tunnel.cfg and write to tunnel
-    $tunnel = Get-Content -Path $storageFile
+    try {
+        $tunnel = Get-Content -Path $storageFile -ErrorAction Stop
+        Write-Output $tunnel
+    } catch {
+        # Ignore errors
+    }
 }
 
 # Define cloudflared binary
@@ -72,13 +107,15 @@ $logFile = "C:\tunnel\cloudflared.log"
 $storageFile = "C:\tunnel\tunnel.cfg"
 
 # Initialize tunnel variable
-$tunnel = ""
+$tunnel = $null
 
-# Assign $args[0] to tunnelPort if provided, otherwise use "80"
-if ($args[0]) {
-    $tunnelPort = $args[0]
+# Check if the provided transfer parameter is a number (port)
+if ($args[0] -match "^\d+$") {
+    $target = "127.0.0.1:$($args[0])"  # Append provided port to localhost
+} elseif ($args[0]) {
+    $target = $args[0]  # Use provided target address
 } else {
-    $tunnelPort = 80
+    $target = "127.0.0.1:80"  # Default target address and port
 }
 
 if ($args[0]) {
@@ -87,7 +124,7 @@ if ($args[0]) {
         Stop-Tunnel
         exit
     } elseif ($args[0] -gt 0) {
-        # Start new tunnel with provided port
+        # Start new tunnel with provided target
         Start-Tunnel
     }
 } else {
