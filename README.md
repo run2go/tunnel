@@ -34,5 +34,11 @@ alias tunnel='/usr/local/bin/tunnel.sh'
 - `sudo`
 - `pkill`
 
+## Windows Version
+Given GPO limitations, this command can be used to execute the tunnel.ps1 file in powershell
+```powershell
+powershell -ExecutionPolicy Bypass -File tunnel.ps1
+```
+
 ## License
 MIT
