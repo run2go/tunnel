@@ -35,9 +35,37 @@ alias tunnel='/usr/local/bin/tunnel.sh'
 - `pkill`
 
 ## Windows Version
-Given GPO limitations, this command can be used to execute the tunnel.ps1 file in powershell
+Standalone PowerShell command to execute the ps1 script
 ```powershell
 powershell -ExecutionPolicy Bypass -File tunnel.ps1
+```
+
+### For a proper setup, perform these steps:
+
+Retrieve the tunnel.ps1 script
+```powershell
+wget https://raw.githubusercontent.com/run2go/tunnel/main/tunnel.ps1 -O C:\tunnel\tunnel.ps1
+```
+
+Create a function to execute the tunnel.ps1 script
+```powershell
+function Quick-Tunnel {
+    param (
+        [Parameter(ValueFromRemainingArguments = $true)]
+        [string[]]$Args
+    )
+    $scriptPath = "C:\tunnel\tunnel.ps1"
+    $params = @("-ExecutionPolicy", "Bypass", "-File", $scriptPath)
+    if ($Args) {
+        $params += $Args
+    }
+    & powershell $params
+}
+```
+
+Set up a PS "tunnel" alias
+```powershell
+Set-Alias -Name tunnel -Value Quick-Tunnel
 ```
 
 ## License
