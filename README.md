@@ -47,7 +47,7 @@ Retrieve the tunnel.ps1 script
 wget https://raw.githubusercontent.com/run2go/tunnel/main/tunnel.ps1 -O C:\tunnel\tunnel.ps1
 ```
 
-Create a function to execute the tunnel.ps1 script
+Create a function to execute the tunnel.ps1 script that supports argument passthrough
 ```powershell
 function Quick-Tunnel {
     param (
