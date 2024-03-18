@@ -1,4 +1,4 @@
-# PowerShell Equivalent of the tunnel.sh Bash Script
+# PowerShell equivalent of the tunnel.sh shell script
 
 function Start-Tunnel {
     # Stop existing tunnel
