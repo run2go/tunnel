@@ -14,6 +14,15 @@ if [[ "$(id -u)" -ne 0 ]]; then
     exit $?
 fi
 
+# Define binary url
+binary_url="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-"
+
+if [[ "$(arch)" -eq "armv7l" ]]; then
+    binary_url="${binary_url}arm"
+else
+    binary_url="${binary_url}amd64"
+fi
+
 start_tunnel() {
     # Stop existing tunnel
     stop_tunnel
@@ -26,7 +35,7 @@ start_tunnel() {
 
     # Download cloudflared binary if missing
     if [ ! -f "/usr/local/bin/cloudflared" ]; then
-        wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -O /usr/local/bin/cloudflared
+        wget -q "$binary_url" -O /usr/local/bin/cloudflared
         chmod +x /usr/local/bin/cloudflared
     fi
 
