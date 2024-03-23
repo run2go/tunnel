@@ -14,15 +14,6 @@ if [[ "$(id -u)" -ne 0 ]]; then
     exit $?
 fi
 
-# Define binary url
-binary_url="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-"
-
-if [[ "$(arch)" -eq "armv7l" ]]; then
-    binary_url="${binary_url}arm"
-else
-    binary_url="${binary_url}amd64"
-fi
-
 start_tunnel() {
     # Stop existing tunnel
     stop_tunnel
@@ -34,7 +25,16 @@ start_tunnel() {
     touch "$storage_file"
 
     # Download cloudflared binary if missing
-    if [ ! -f "/usr/local/bin/cloudflared" ]; then
+    if [ ! -f " /usr/local/bin/cloudflared" ]; then
+        # Define binary url
+        binary_url="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-"
+
+        if [[ "$(arch)" == "armv7l" ]]; then
+            binary_url="${binary_url}arm"
+        else
+            binary_url="${binary_url}amd64"
+        fi
+        
         wget -q "$binary_url" -O /usr/local/bin/cloudflared
         chmod +x /usr/local/bin/cloudflared
     fi
@@ -94,12 +94,12 @@ read_data() {
 }
 
 # Call stop_tunnel function
-if [[ "$1" = "stop" ]]; then
+if [[ "$1" == "stop" ]]; then
     stop_tunnel
     exit 0
 # Use localhost + port if only port provided
 elif [[ "$1" =~ ^([0-9]+)$ ]]; then
-    target="localhost:$1"
+    target="$target_address:$1"
 # Use provided address
 elif [[ "$1" ]]; then
     target="$1"
