@@ -32,7 +32,7 @@ alias tunnel='/usr/local/bin/tunnel.sh'
 - `wget`
 - `grep`
 - `sudo`
-- `pkill`
+- `procps`
 
 ## Windows Version
 Standalone PowerShell command to execute the ps1 script
