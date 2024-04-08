@@ -29,10 +29,21 @@ start_tunnel() {
         # Define binary url
         binary_url="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-"
 
-        if [[ "$(arch)" == "armv7l" ]]; then
+        # Get the machine hardware name
+        machine=$(uname -m)
+        
+        # Build binary string depending on required binary
+        if [ "$machine" = "armv7l" ]; then
             binary_url="${binary_url}arm"
-        else
+        elif [ "$machine" = "aarch64" ]; then
+            binary_url="${binary_url}arm64"
+        elif [ "$machine" = "x86_64" ] || [ "$machine" = "amd64" ]; then
             binary_url="${binary_url}amd64"
+        elif [ "$machine" = "i386" ]; then
+            binary_url="${binary_url}386"
+        else
+            echo "Unknown architecture: $machine"
+            exit 1
         fi
         
         wget -q "$binary_url" -O /usr/local/bin/cloudflared
