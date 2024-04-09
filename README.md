@@ -17,7 +17,7 @@ sudo chmod +x /usr/local/bin/tunnel.sh
 
 Create "tunnel" alias
 ```sh
-alias tunnel='/usr/local/bin/tunnel.sh'
+alias tunnel='sudo /usr/local/bin/tunnel.sh'
 ```
 
 ## Usage
